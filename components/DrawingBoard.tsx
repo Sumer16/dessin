@@ -9,12 +9,18 @@ import {
   useTouchHandler,
 } from '@shopify/react-native-skia';
 
-export default function DrawingBoard() {
+type DrawingBoardProps = {
+  onStart: (x: number, y: number) => void;
+  onActive: (x1: number, y1: number, x2: number, y2: number) => void;
+};
+
+export default function DrawingBoard({ onStart, onActive }: DrawingBoardProps) {
   const [paths, setPaths] = useState<SkPath[]>([]);
 
   const onDrawingStart = useCallback((touchInfo: TouchInfo) => {
     setPaths((old) => {
       const { x, y } = touchInfo;
+      onStart(x, y);
       const newPath = Skia.Path.Make();
       newPath.moveTo(x, y);
       return [...old, newPath];
@@ -28,6 +34,8 @@ export default function DrawingBoard() {
       const lastPoint = currentPath.getLastPt();
       const xMid = (lastPoint.x + x) / 2;
       const yMid = (lastPoint.y + y) / 2;
+
+      onActive(lastPoint.x, lastPoint.y, xMid, yMid);
 
       currentPath.quadTo(lastPoint.x, lastPoint.y, xMid, yMid);
       return [...currentPaths.slice(0, currentPaths.length - 1), currentPath];
