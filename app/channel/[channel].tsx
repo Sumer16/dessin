@@ -1,9 +1,9 @@
 import 'react-native-url-polyfill/auto';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 
-import DrawingBoard from '@/components/DrawingBoard';
+import DrawingBoard, { DrawingBoardRef } from '@/components/DrawingBoard';
 
 import { createClient, RealtimeChannel } from '@supabase/supabase-js';
 
@@ -19,6 +19,8 @@ export default function ChannelId() {
   const [ broadcastChannel, setBroadcastChannel ] = useState<RealtimeChannel | null>(null);
   const [ isConnected, setIsConnected ] = useState<boolean>(false);
 
+  const drawingRef = useRef<DrawingBoardRef>(null);
+
   useEffect(() => {
     if (!channel || isConnected) return;
 
@@ -26,10 +28,12 @@ export default function ChannelId() {
     setBroadcastChannel(newChannel);
 
     const subscription = newChannel.on('broadcast', { event: 'start' }, ({ payload }) => {
-      console.log('Received start event', payload);
+      const { x, y, color, user } = payload;
+      drawingRef.current?.receivedStart(x, y, color, user);
     })
     .on('broadcast', { event: 'active' }, ({ payload }) => {
-      console.log('Received active event', payload);
+      const { x1, y1, x2, y2, user } = payload;
+      drawingRef.current?.receivedActive(x1, y1, x2, y2, user);
     })
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
@@ -64,7 +68,7 @@ export default function ChannelId() {
       <Stack.Screen options={{ title: `Channel ${channel} - #${randomUsername}` }} />
       {
         isConnected && (
-          <DrawingBoard onStart={onDrawingStart} onActive={onDrawingActive} />
+          <DrawingBoard ref={drawingRef} onStart={onDrawingStart} onActive={onDrawingActive} />
         )
       }
     </View>
