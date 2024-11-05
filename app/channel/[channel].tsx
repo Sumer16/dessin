@@ -65,7 +65,7 @@ export default function ChannelId() {
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
-      <Stack.Screen options={{ title: `Channel ${channel} - #${randomUsername}` }} />
+      <Stack.Screen options={{ headerBackTitle: 'back', title: `Channel ${channel} - #${randomUsername}` }} />
       {
         isConnected && (
           <DrawingBoard ref={drawingRef} onStart={onDrawingStart} onActive={onDrawingActive} />
